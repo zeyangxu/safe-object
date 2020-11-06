@@ -1,14 +1,13 @@
 export const Checker = {
-  isExist: target => target !== undefined,
-  isNull: target => target === null,
-  isObject: (target) =>
-    typeof target === "object" && target !== null && !Array.isArray(target),
-  isNumber: (target) => typeof target === 'number',
-  isBool: (target) => target === true || target === false,
-  isString: (target) => typeof target === "string",
-  isList: Array.isArray
-  // TODO: isBigInt
-  // TODO: isSymbol
+  isExist: x => !(Object.prototype.toString.call(x) === '[object Undefined]'),
+  isNull: x => Object.prototype.toString.call(x) === '[object Null]',
+  isObject: x => Object.prototype.toString.call(x) === '[object Object]',
+  isNumber: x => Object.prototype.toString.call(x) === '[object Number]',
+  isBool: x => x === true || x === false,
+  isString: x => Object.prototype.toString.call(x) === '[object String]',
+  isList: x => Object.prototype.toString.call(x) === '[object Array]',
+  isBigInt: x => Object.prototype.toString.call(x) === '[object BigInt]',
+  isSymbol: x => Object.prototype.toString.call(x) === '[object Symbol]'
 };
 
 const hasSameType = (a) => (b) => {
@@ -62,6 +61,7 @@ export class SafeObject {
     this._isValid = isValid;
   }
   field(fieldName) {
+    if(!Checker.isString(fieldName)) throw new Error('field name must be string')
     if (!this._isValid) {
       // if previous field() is not passed
       return new SafeObject(this.target, false);

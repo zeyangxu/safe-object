@@ -91,28 +91,31 @@ describe('one level object target', () => {
 })
 
 describe('multiple levels object target', () => {
-  it('access valid field', () => {
-    const target = {
-      a: 1,
-      b: 2,
-      c: {
-        d: 3,
-        e: {
-          f: 4,
-          g: {
-            h: {
-              i: {
-                j: 5,
-                k: 6
-              }
+  const target = {
+    a: 1,
+    b: 2,
+    c: {
+      d: 3,
+      e: {
+        f: 4,
+        g: {
+          h: {
+            i: {
+              j: 5,
+              k: 6
             }
           }
         }
       }
     }
+  }
+  it('access valid field', () => {
     expect(new SafeObject(target).field('c').field('e').field('g').field('h').field('i').field('j').getInt(0)).toBe(5)
     expect(new SafeObject(target).field('c').field('e').field('g').field('h').field('i').field('k').getInt(0)).toBe(6)
     expect(new SafeObject(target).field('c').field('e').field('f').getInt(0)).toBe(4)
     expect(new SafeObject(target).field('c').field('d').getInt(0)).toBe(3)
+  })
+  it('access invalid field', () => {
+    expect(new SafeObject(target).field('c').field('wow').getInt(123)).toBe(123)
   })
 })
