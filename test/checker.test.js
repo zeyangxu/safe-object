@@ -314,3 +314,52 @@ describe('Checker.isExist', () => {
     expect(Checker.isExist(undefined)).toBe(false)
   })
 })
+
+describe('Checker.isFunction', () => {
+  it('give number return false', () => {
+    const flag = false
+    expect(Checker.isFunction(1)).toBe(flag)
+    expect(Checker.isFunction(99)).toBe(flag)
+    expect(Checker.isFunction(-1)).toBe(flag)
+    expect(Checker.isFunction(111)).toBe(flag)
+    expect(Checker.isFunction(-999)).toBe(flag)
+    expect(Checker.isFunction(129341209840281)).toBe(flag)
+    expect(Checker.isFunction(0x123)).toBe(flag)
+  })
+  it('give string return false', () => {
+    const flag = false
+    expect(Checker.isFunction('1')).toBe(flag)
+    expect(Checker.isFunction('99')).toBe(flag)
+    expect(Checker.isFunction('-1')).toBe(flag)
+    expect(Checker.isFunction('111')).toBe(flag)
+    expect(Checker.isFunction('-999')).toBe(flag)
+    expect(Checker.isFunction('129341209840281')).toBe(flag)
+    expect(Checker.isFunction('0x123')).toBe(flag)
+  })
+  it('give boolean return false', () => {
+    const flag = false
+    expect(Checker.isFunction(true)).toBe(flag)
+    expect(Checker.isFunction(false)).toBe(flag)
+  })
+  it('give array return false', () => {
+    const flag = false
+    expect(Checker.isFunction([])).toBe(flag)
+    expect(Checker.isFunction([1,2,3])).toBe(flag)
+  })
+  it('give object return false', () => {
+    const flag = false
+    expect(Checker.isFunction({})).toBe(flag)
+    expect(Checker.isFunction({a: 1, b: 2, c: 3})).toBe(flag)
+    expect(Checker.isFunction({a: 1, b: 2, c: { d: 3, e: 4, f: { g: 5, h: 6}}})).toBe(flag)
+  })
+  it('give null return false', () => {
+    expect(Checker.isFunction(null)).toBe(false)
+  })
+  it('give undefined return false', () => {
+    expect(Checker.isFunction(undefined)).toBe(false)
+  })
+  it('give function return true', () => {
+    expect(Checker.isFunction(() => {})).toBe(true)
+    expect(Checker.isFunction(function(){})).toBe(true)
+  })
+})

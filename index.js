@@ -9,6 +9,7 @@ export const Checker = {
   isList: x => Object.prototype.toString.call(x) === '[object Array]',
   isBigInt: x => Object.prototype.toString.call(x) === '[object BigInt]',
   isSymbol: x => Object.prototype.toString.call(x) === '[object Symbol]',
+  isFunction: x => Object.prototype.toString.call(x) === '[object Function]',
   // Data Structrues
   isListOf: checker => list => (Object.prototype.toString.call(x) === '[object Array]') && (!list.some(i => !checker(i)))
 };
