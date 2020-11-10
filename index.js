@@ -1,4 +1,5 @@
 export const Checker = {
+  // Primitives
   isExist: x => !(Object.prototype.toString.call(x) === '[object Undefined]'),
   isNull: x => Object.prototype.toString.call(x) === '[object Null]',
   isObject: x => Object.prototype.toString.call(x) === '[object Object]',
@@ -7,7 +8,9 @@ export const Checker = {
   isString: x => Object.prototype.toString.call(x) === '[object String]',
   isList: x => Object.prototype.toString.call(x) === '[object Array]',
   isBigInt: x => Object.prototype.toString.call(x) === '[object BigInt]',
-  isSymbol: x => Object.prototype.toString.call(x) === '[object Symbol]'
+  isSymbol: x => Object.prototype.toString.call(x) === '[object Symbol]',
+  // Data Structrues
+  isListOf: checker => list => (Object.prototype.toString.call(x) === '[object Array]') && (!list.some(i => !checker(i)))
 };
 
 const hasSameType = (a) => (b) => {
@@ -37,19 +40,27 @@ export const structureMatching = (template) => (target) => {
   return _structureMatching(template)(new SafeObject(target))
 }
 
-const _structureMatching = (template) => (target) => {
+const _structureMatching = (template) => (targetSafe) => {
   const obj = {};
   if (!Checker.isObject(template)) {
     const [defaultValue, checker] = template;
-    const val = target.get(defaultValue, checker);
-    if (hasSameType(defaultValue)(val)) {
-      return val; // same type
+    if(Checker.isList(defaultValue)) { // 当List里的元素是Object的时候
+      const [listObjTemplate] = defaultValue
+      if(listObjTemplate && Checker.isObject(listObjTemplate)) {
+        const targetList = targetSafe.getList([])
+        let res = []
+        targetList.forEach((item, index) => {
+          res[index] = structureMatching(listObjTemplate)(item)
+        })
+        return res
+      }
     }
-    return defaultValue; // not same type
+    const val = targetSafe.get(defaultValue, checker);
+    return val
   } 
   Object.keys(template).forEach((key) => {
     obj[key] = _structureMatching(template[key])(
-      target.field(key)
+      targetSafe.field(key)
     );
   });
   return obj;
@@ -98,5 +109,8 @@ export class SafeObject {
   }
   getNull(def) {
     return this.get(def, Checker.isNull);
+  }
+  getListOf(def, checker) {
+    return this.get(def, Checker.isListOf(checker));
   }
 }

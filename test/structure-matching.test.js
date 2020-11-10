@@ -1,33 +1,52 @@
 import {structureMatching, Checker} from '../index.js'
 
-var response = {
-  data: {
-    statistics: {
-      total_play: "41232",
-      new_fans: "1231413",
-      ratio: "33%"
+it('通用的情况', () => {
+  const target = {
+    data: {
+      statistics: {
+        total_play: "41232",
+        new_fans: "1231413",
+        ratio: "33%"
+      },
+      stats: ["a", "b", "c"]
     },
-    stats: ["a", "b", "c"]
-  },
-  code: 500,
-  msg: "hjh"
-};
-
-var init = {
-  data: {
-    statistics: {
-      total_play: ["--", Checker.isString],
-      new_fans: ["--", Checker.isString],
-      ratio: ["--%", Checker.isString],
-      total_pay: ["--", Checker.isString],
-      item_purchased: ["123312321", Checker.isString]
+    code: 500,
+    msg: "hjh"
+  };
+  
+  const template = {
+    data: {
+      statistics: {
+        total_play: ["--", Checker.isString],
+        new_fans: ["--", Checker.isString],
+        ratio: ["--%", Checker.isString],
+        total_pay: ["--", Checker.isString],
+        item_purchased: ["123312321", Checker.isString]
+      },
+      stats: [[1, 2], Checker.isList]
     },
-    stats: [[1, 2], Checker.isList]
-  },
-  code: [200, Checker.isInt],
-  msg: ["", Checker.isString],
-  extra: [123123, Checker.isInt]
-};
+    code: [200, Checker.isInt],
+    msg: ["", Checker.isString],
+    extra: [123123, Checker.isInt]
+  };
+  
+  const result = {
+    data: {
+      statistics: {
+        total_play: "41232",
+        new_fans: "1231413",
+        ratio: "33%",
+        total_pay: "--",
+        item_purchased: "123312321"
+      },
+      stats: ["a", "b", "c"]
+    },
+    code: 500,
+    msg: "hjh",
+    extra: 123123
+  }
+  expect(structureMatching(template)(target)).toStrictEqual(result)
+})
 
 it('检查类型，如果通过优先选择', () => {
   const target = {
@@ -43,3 +62,32 @@ it('检查类型，如果通过优先选择', () => {
     msg: "hjh"
   });
 });
+
+it('List of object类型', () => {
+  const CarTemplate = {
+    brand: ['', Checker.isString],
+    year: [0, Checker.isNumber],
+    make: ['', Checker.isString],
+  }
+  const template = {
+    cars: [[CarTemplate], Checker.isList]
+  }
+  const target = {
+    cars: [
+      { brand: 'bmw', year: 2000, make: 'M3'},
+      { brand: 'mercedece', year: 2010, make: 'C300'},
+      { brand: 'honda', year: 2019, make: 'civic'},
+      { brand: 'toyota', year: 2000 },
+      { foo: 'wow', bar: 123}
+    ]
+  }
+  expect(structureMatching(template)(target)).toStrictEqual({
+    cars: [
+      { brand: 'bmw', year: 2000, make: 'M3'},
+      { brand: 'mercedece', year: 2010, make: 'C300'},
+      { brand: 'honda', year: 2019, make: 'civic'},
+      { brand: 'toyota', year: 2000, make: '' },
+      { brand: '', year: 0, make: ''}
+    ]
+  })
+})
