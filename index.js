@@ -14,44 +14,25 @@ export const Checker = {
   isListOf: checker => list => (Object.prototype.toString.call(x) === '[object Array]') && (!list.some(i => !checker(i)))
 };
 
-const hasSameType = (a) => (b) => {
-  if (Checker.isList(a) && Checker.isList(b)) {
-    return hasSameTypeList(a)(b);
-  }
-  const checkListA = Object.values(Checker).map((f) => f(a));
-  const checkListB = Object.values(Checker).map((f) => f(b));
-  let flag = true;
-  for (let i = 0; i < checkListA.length; i++) {
-    if (checkListA[i] !== checkListB[i]) flag = false;
-  }
-  return flag;
-};
-
-const hasSameTypeList = (a) => (b) => {
-  // 以短的数组为基准
-  const shorter = a.length < b.length ? a : b;
-  let flag = true;
-  for (let i = 0; i < shorter.length; i++) {
-    if (!hasSameType(a[i])(b[i])) flag = false;
-  }
-  return flag;
-};
-
-export const structureMatching = (template) => (target) => {
-  return _structureMatching(template)(new SafeObject(target))
+export const match = (template) => (target) => {
+  return structureMatching(template)(new SafeObject(target))
 }
 
-const _structureMatching = (template) => (targetSafe) => {
+const structureMatching = (template) => (targetSafe) => {
   const obj = {};
+  if(!Checker.isExist(template)) throw new Error('template must be given')
   if (!Checker.isObject(template)) {
+    if(!Checker.isList(template) || template.length < 1) {  // template只会是对象或者一个二元数组
+      throw new Error('type definition must be given as a Array with at list one element')
+    }
     const [defaultValue, checker] = template;
-    if(Checker.isList(defaultValue)) { // 当List里的元素是Object的时候
+    if(Checker.isList(defaultValue)) { // 当默认值为一个List，且里面的元素是Object的时候
       const [listObjTemplate] = defaultValue
       if(listObjTemplate && Checker.isObject(listObjTemplate)) {
         const targetList = targetSafe.getList([])
         let res = []
         targetList.forEach((item, index) => {
-          res[index] = structureMatching(listObjTemplate)(item)
+          res[index] = match(listObjTemplate)(item)
         })
         return res
       }
@@ -60,7 +41,7 @@ const _structureMatching = (template) => (targetSafe) => {
     return val
   } 
   Object.keys(template).forEach((key) => {
-    obj[key] = _structureMatching(template[key])(
+    obj[key] = structureMatching(template[key])(
       targetSafe.field(key)
     );
   });
@@ -88,7 +69,8 @@ export class SafeObject {
   }
   get(defaultValue, checker = () => true) {
     // return the value if the check pass
-    if (!this._isValid || !checker(this.target)) {
+    if(!Checker.isFunction(checker)) throw new Error('checker must be a function')
+    if (!this._isValid || checker(this.target) !== true) {
       if (!checker(defaultValue)) {
         throw new Error("default value must pass the check");
       }

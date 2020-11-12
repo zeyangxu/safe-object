@@ -1,4 +1,4 @@
-import {structureMatching, Checker} from '../index.js'
+import { match, Checker} from '../index.js'
 
 it('通用的情况', () => {
   const target = {
@@ -45,7 +45,7 @@ it('通用的情况', () => {
     msg: "hjh",
     extra: 123123
   }
-  expect(structureMatching(template)(target)).toStrictEqual(result)
+  expect( match(template)(target)).toStrictEqual(result)
 })
 
 it('检查类型，如果通过优先选择', () => {
@@ -57,7 +57,7 @@ it('检查类型，如果通过优先选择', () => {
     code: [200, Checker.isInt],
     msg: ["", Checker.isString],
   };
-  expect(structureMatching(template)(target)).toStrictEqual({
+  expect( match(template)(target)).toStrictEqual({
     code: 500,
     msg: "hjh"
   });
@@ -81,7 +81,7 @@ it('List of object类型', () => {
       { foo: 'wow', bar: 123}
     ]
   }
-  expect(structureMatching(template)(target)).toStrictEqual({
+  expect( match(template)(target)).toStrictEqual({
     cars: [
       { brand: 'bmw', year: 2000, make: 'M3'},
       { brand: 'mercedece', year: 2010, make: 'C300'},
